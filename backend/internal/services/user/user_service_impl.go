@@ -37,6 +37,11 @@ func (s *userService) GetUserByID_service(ctx context.Context, id int64) (*domai
 	return s.queries.GetUserByID(ctx, id)
 }
 
+func (s *userService) GetUserByUsername_service(ctx context.Context, username string) (*domain.User, error) {
+	slog.Info("Getting user by username", "username", username)
+	return s.queries.GetUserByUsername(ctx, username)
+}
+
 func (s *userService) UpdateUser_service(ctx context.Context, user *domain.User) map[string]string {
 	// check if user is valid
 	if errs := user.Validate(); len(errs) > 0 {

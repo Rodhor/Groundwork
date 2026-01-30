@@ -8,13 +8,15 @@ import (
 )
 
 type UserDB struct {
-	mutext sync.RWMutex
-	Users  map[int64]domain.User
+	mu        sync.RWMutex
+	Users     map[int64]domain.User
+	CurrentID int64
 }
 
 func NewUserDB() *UserDB {
 	return &UserDB{
-		Users: make(map[int64]domain.User),
+		Users:     make(map[int64]domain.User),
+		CurrentID: 0,
 	}
 }
 
@@ -28,50 +30,64 @@ func (db *UserDB) CheckDuplicateUsername(ctx context.Context, user *domain.User)
 }
 
 func (db *UserDB) AddNewUser(ctx context.Context, user *domain.User) (*domain.User, error) {
-	db.mutext.Lock()
-	defer db.mutext.Unlock()
+	db.mu.Lock()
+	defer db.mu.Unlock()
 
 	if db.CheckDuplicateUsername(ctx, user) {
-		return &domain.User{}, errors.New("Username already exists")
+		return &domain.User{}, errors.New("username already exists")
 	}
 
+	user.ID = db.CurrentID
 	db.Users[user.ID] = *user
 
+	db.CurrentID++
 	return user, nil
 }
 
-func (u *UserDB) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
-	u.mutext.RLock()
-	defer u.mutext.RUnlock()
+func (db *UserDB) GetUserByID(ctx context.Context, id int64) (*domain.User, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
 
-	if user, ok := u.Users[id]; ok {
+	if user, ok := db.Users[id]; ok {
 		return &user, nil
 	}
 	return &domain.User{}, errors.New("User not found")
 }
 
-func (u *UserDB) UpdateUser(ctx context.Context, user *domain.User) error {
-	u.mutext.Lock()
-	defer u.mutext.Unlock()
+func (db *UserDB) GetUserByUsername(ctx context.Context, username string) (*domain.User, error) {
+	db.mu.RLock()
+	defer db.mu.RUnlock()
 
-	if _, ok := u.Users[user.ID]; !ok {
+	for _, user := range db.Users {
+		if user.Username == username {
+			return &user, nil
+		}
+	}
+	return &domain.User{}, errors.New("User not found")
+}
+
+func (db *UserDB) UpdateUser(ctx context.Context, user *domain.User) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	if _, ok := db.Users[user.ID]; !ok {
 		return errors.New("User not found")
 	}
 
-	u.Users[user.ID] = *user
+	db.Users[user.ID] = *user
 
 	return nil
 }
 
-func (u *UserDB) DeleteUser(ctx context.Context, id int64) error {
-	u.mutext.Lock()
-	defer u.mutext.Unlock()
+func (db *UserDB) DeleteUser(ctx context.Context, id int64) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
 
-	if _, ok := u.Users[id]; !ok {
+	if _, ok := db.Users[id]; !ok {
 		return errors.New("User not found")
 	}
 
-	delete(u.Users, id)
+	delete(db.Users, id)
 
 	return nil
 }

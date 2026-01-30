@@ -50,6 +50,22 @@ func (u *userCommand) GetUserByID_command(ctx context.Context, id int64) Respons
 	}
 }
 
+func (u *userCommand) GetUserByUsername_command(ctx context.Context, username string) Response {
+	user, err := u.userService.GetUserByUsername_service(ctx, username)
+	if err != nil {
+		return Response{
+			Status:  http.StatusNotFound,
+			Message: "User not found",
+			Data:    err,
+		}
+	}
+	return Response{
+		Status:  http.StatusOK,
+		Message: "User found",
+		Data:    user,
+	}
+}
+
 func (u *userCommand) UpdateUser_command(ctx context.Context, user *domain.User) Response {
 	errs := u.userService.UpdateUser_service(ctx, user)
 	if errs != nil {
