@@ -1,0 +1,11 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "Groundwork",
+  "outputfilename": "Groundwork",
+  "frontend:install": "pnpm install",
+  "frontend:build": "pnpm run build",
+  "author": {
+    "name": "Chris Nielsen",
+    "email": "chris.rahbek.nielsen@gmail.com"
+  }
+}
