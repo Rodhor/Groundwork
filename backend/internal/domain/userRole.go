@@ -1,11 +1,11 @@
 package domain
 
-type UserRole int
+type UserRole string
 
 const (
-	Admin UserRole = iota
-	Operator
-	Analyst
+	Admin    UserRole = "administrator"
+	Operator UserRole = "operator"
+	Analyst  UserRole = "analyst"
 )
 
 func (r UserRole) IsValid() bool {
@@ -14,17 +14,4 @@ func (r UserRole) IsValid() bool {
 		return true
 	}
 	return false
-}
-
-func (r UserRole) String() string {
-	switch r {
-	case Admin:
-		return "Admin"
-	case Operator:
-		return "Operator"
-	case Analyst:
-		return "Analyst"
-	default:
-		return "Unknown"
-	}
 }

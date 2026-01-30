@@ -17,9 +17,19 @@ func NewUserService() UserService {
 	}
 }
 
-func (s *userService) AddNewUser_service(ctx context.Context, user *domain.User) (*domain.User, error) {
+func (s *userService) AddNewUser_service(ctx context.Context, user *domain.User) (*domain.User, map[string]string) {
+	// check if user is valid
+	if errors := user.Validate(); len(errors) > 0 {
+		return nil, errors
+	}
 	slog.Info("Adding new user", "user", user)
-	return s.queries.AddNewUser(ctx, user)
+	createdUser, err := s.queries.AddNewUser(ctx, user)
+
+	if err != nil {
+		return nil, map[string]string{"error": err.Error()}
+
+	}
+	return createdUser, nil
 }
 
 func (s *userService) GetUserByID_service(ctx context.Context, id int64) (*domain.User, error) {
@@ -27,9 +37,17 @@ func (s *userService) GetUserByID_service(ctx context.Context, id int64) (*domai
 	return s.queries.GetUserByID(ctx, id)
 }
 
-func (s *userService) UpdateUser_service(ctx context.Context, user *domain.User) error {
+func (s *userService) UpdateUser_service(ctx context.Context, user *domain.User) map[string]string {
+	// check if user is valid
+	if errs := user.Validate(); len(errs) > 0 {
+		return errs
+	}
 	slog.Info("Updating user", "user", user)
-	return s.queries.UpdateUser(ctx, user)
+	err := s.queries.UpdateUser(ctx, user)
+	if err != nil {
+		return map[string]string{"error": err.Error()}
+	}
+	return nil
 }
 
 func (s *userService) DeleteUser_service(ctx context.Context, id int64) error {

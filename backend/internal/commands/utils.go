@@ -1,7 +1,7 @@
 package commandUtils
 
 type Response struct {
-	Status  int
-	Message string
-	Data    interface{}
+	Status  int    `json:"status"`
+	Message string `json:"message"`
+	Data    any    `json:"data"`
 }
