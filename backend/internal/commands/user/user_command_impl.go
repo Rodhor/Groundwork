@@ -2,10 +2,27 @@ package internalUserCommand
 
 import (
 	. "Groundwork/backend/internal/commands"
-	"Groundwork/backend/internal/domain"
+	. "Groundwork/backend/internal/domain"
 	. "Groundwork/backend/internal/services/user"
 	"context"
+	"errors"
 	"net/http"
+)
+
+// Error messages
+var (
+	CreationFailed = errors.New("user creation failed").Error()
+	NotFound       = errors.New("user not found").Error()
+	DeletionFailed = errors.New("user deletion failed").Error()
+	UpdateFailed   = errors.New("user update failed").Error()
+)
+
+// Success messages
+var (
+	Created = "User was created succesfully"
+	Updated = "User was updated succesfully"
+	Deleted = "User was deleted succesfully"
+	Found   = "User was found succesfully"
 )
 
 type userCommand struct {
@@ -18,18 +35,18 @@ func NewUserCommand(userService UserService) UserCommand {
 	}
 }
 
-func (u *userCommand) AddNewUser_command(ctx context.Context, user *domain.User) Response {
+func (u *userCommand) AddNewUser_command(ctx context.Context, user *User) Response {
 	newUser, errs := u.userService.AddNewUser_service(ctx, user)
 	if errs != nil {
 		return Response{
 			Status:  http.StatusBadRequest,
-			Message: "An error occured while creating the user.",
+			Message: CreationFailed,
 			Data:    errs,
 		}
 	}
 	return Response{
 		Status:  http.StatusCreated,
-		Message: "User was created succesfully",
+		Message: Created,
 		Data:    newUser,
 	}
 }
@@ -39,13 +56,13 @@ func (u *userCommand) GetUserByID_command(ctx context.Context, id int64) Respons
 	if err != nil {
 		return Response{
 			Status:  http.StatusNotFound,
-			Message: "User not found",
+			Message: NotFound,
 			Data:    err,
 		}
 	}
 	return Response{
 		Status:  http.StatusOK,
-		Message: "User found",
+		Message: Found,
 		Data:    user,
 	}
 }
@@ -55,29 +72,29 @@ func (u *userCommand) GetUserByUsername_command(ctx context.Context, username st
 	if err != nil {
 		return Response{
 			Status:  http.StatusNotFound,
-			Message: "User not found",
+			Message: NotFound,
 			Data:    err,
 		}
 	}
 	return Response{
 		Status:  http.StatusOK,
-		Message: "User found",
+		Message: Found,
 		Data:    user,
 	}
 }
 
-func (u *userCommand) UpdateUser_command(ctx context.Context, user *domain.User) Response {
+func (u *userCommand) UpdateUser_command(ctx context.Context, user *User) Response {
 	errs := u.userService.UpdateUser_service(ctx, user)
 	if errs != nil {
 		return Response{
 			Status:  http.StatusBadRequest,
-			Message: "An error occured while updating the user.",
+			Message: UpdateFailed,
 			Data:    errs,
 		}
 	}
 	return Response{
 		Status:  http.StatusOK,
-		Message: "User updated succesfully",
+		Message: Updated,
 		Data:    user,
 	}
 }
@@ -87,13 +104,13 @@ func (u *userCommand) DeleteUser_command(ctx context.Context, id int64) Response
 	if err != nil {
 		return Response{
 			Status:  http.StatusBadRequest,
-			Message: "An error occured while deleting the user.",
+			Message: DeletionFailed,
 			Data:    err,
 		}
 	}
 	return Response{
 		Status:  http.StatusOK,
-		Message: "User deleted succesfully",
+		Message: Deleted,
 		Data:    nil,
 	}
 }

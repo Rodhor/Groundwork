@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"net/mail"
 	"time"
 )
@@ -19,35 +20,45 @@ type User struct {
 	UpdatedBy    int64     `json:"updated_by"`
 }
 
+var (
+	InvalidEmailFormat    = errors.New("invalid email format").Error()
+	InvalidRole           = errors.New("invalid role").Error()
+	InvalidNameEmpty      = errors.New("name cannot be empty").Error()
+	InvalidUsernameEmpty  = errors.New("username cannot be empty").Error()
+	InvalidUsernameFormat = errors.New("invalid username format").Error()
+	InvalidEmailEmpty     = errors.New("email cannot be empty").Error()
+	InvalidPasswordEmpty  = errors.New("password cannot be empty").Error()
+)
+
 func (u *User) Validate() map[string]string {
 
 	// Map to hold validation errors
 	errs := make(map[string]string)
 
 	if u.Email == "" {
-		errs["email"] = "email cannot be empty"
+		errs["email"] = InvalidEmailEmpty
 	} else if _, err := mail.ParseAddress(u.Email); err != nil {
-		errs["email"] = "invalid email format"
+		errs["email"] = InvalidEmailFormat
 	}
 
 	// Validate that username is not empty
 	if u.Username == "" {
-		errs["username"] = "username cannot be empty"
+		errs["username"] = InvalidUsernameEmpty
 	}
 
 	// Validate that name is not empty
 	if u.Name == "" {
-		errs["name"] = "name cannot be empty"
+		errs["name"] = InvalidNameEmpty
 	}
 
 	// Validate that password is not empty
 	if u.PasswordHash == "" {
-		errs["password"] = "password cannot be empty"
+		errs["password"] = InvalidPasswordEmpty
 	}
 
 	// Validate that role is valid
 	if !u.Role.IsValid() {
-		errs["role"] = "invalid user role"
+		errs["role"] = InvalidRole
 	}
 
 	// Return validation errors even if empty (no errors)
