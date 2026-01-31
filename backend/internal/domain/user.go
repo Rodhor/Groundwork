@@ -3,12 +3,16 @@ package domain
 import (
 	"errors"
 	"net/mail"
+	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
-	ID           int64     `json:"id"`
+	ID           uuid.UUID `json:"id"`
 	Name         string    `json:"name"`
+	UserInitials string    `json:"user_initials"`
 	Username     string    `json:"username"`
 	PasswordHash string    `json:"password_hash"`
 	Email        string    `json:"email"`
@@ -16,8 +20,8 @@ type User struct {
 	LastLogin    time.Time `json:"last_login"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
-	CreatedBy    int64     `json:"created_by"`
-	UpdatedBy    int64     `json:"updated_by"`
+	CreatedBy    string    `json:"created_by"`
+	UpdatedBy    string    `json:"updated_by"`
 }
 
 var (
@@ -64,4 +68,12 @@ func (u *User) Validate() map[string]string {
 	// Return validation errors even if empty (no errors)
 	return errs
 
+}
+
+func (u *User) SetUserInitials() {
+	if len(u.Name) < 2 {
+		u.UserInitials = strings.ToUpper(u.Name[0:1])
+	} else {
+		u.UserInitials = strings.ToUpper(u.Name[0:2])
+	}
 }

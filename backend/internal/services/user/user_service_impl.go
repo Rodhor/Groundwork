@@ -1,19 +1,21 @@
-package internalUserService
+package UserService
 
 import (
-	"Groundwork/backend/internal/database"
+	. "Groundwork/backend/internal/database"
 	. "Groundwork/backend/internal/domain"
 	"context"
 	"log/slog"
+
+	"github.com/google/uuid"
 )
 
 type userService struct {
-	queries *database.UserDB
+	queries *UserDB
 }
 
 func NewUserService() UserService {
 	return &userService{
-		database.NewUserDB(),
+		NewUserDB(),
 	}
 }
 
@@ -22,6 +24,9 @@ func (s *userService) AddNewUser_service(ctx context.Context, user *User) (*User
 	if errors := user.Validate(); len(errors) > 0 {
 		return nil, errors
 	}
+	// set user initials to first two letters of name
+	user.SetUserInitials()
+
 	slog.Info("Adding new user", "user", user)
 	createdUser, err := s.queries.AddNewUser(ctx, user)
 	if err != nil {
@@ -31,7 +36,7 @@ func (s *userService) AddNewUser_service(ctx context.Context, user *User) (*User
 	return createdUser, nil
 }
 
-func (s *userService) GetUserByID_service(ctx context.Context, id int64) (*User, error) {
+func (s *userService) GetUserByID_service(ctx context.Context, id uuid.UUID) (*User, error) {
 	slog.Info("Getting user by ID", "id", id)
 	user, err := s.queries.GetUserByID(ctx, id)
 	if err != nil {
@@ -62,7 +67,7 @@ func (s *userService) UpdateUser_service(ctx context.Context, user *User) map[st
 	return nil
 }
 
-func (s *userService) DeleteUser_service(ctx context.Context, id int64) error {
+func (s *userService) DeleteUser_service(ctx context.Context, id uuid.UUID) error {
 	slog.Info("Deleting user", "id", id)
 	return s.queries.DeleteUser(ctx, id)
 }

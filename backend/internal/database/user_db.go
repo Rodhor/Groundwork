@@ -5,12 +5,13 @@ import (
 	"context"
 	"errors"
 	"sync"
+
+	"github.com/google/uuid"
 )
 
 type UserDB struct {
-	mu        sync.RWMutex
-	Users     map[int64]User
-	CurrentID int64
+	mu    sync.RWMutex
+	Users map[uuid.UUID]*User
 }
 
 // Error messages
@@ -21,8 +22,7 @@ var (
 
 func NewUserDB() *UserDB {
 	return &UserDB{
-		Users:     make(map[int64]User),
-		CurrentID: 0,
+		Users: make(map[uuid.UUID]*User),
 	}
 }
 
@@ -44,18 +44,16 @@ func (db *UserDB) AddNewUser(ctx context.Context, user *User) (*User, error) {
 		return nil, ErrUsernameExists
 	}
 
-	user.ID = db.CurrentID
-	db.Users[user.ID] = *user
-	db.CurrentID++
+	db.Users[uuid.New()] = user
 	return user, nil
 }
 
-func (db *UserDB) GetUserByID(ctx context.Context, id int64) (*User, error) {
+func (db *UserDB) GetUserByID(ctx context.Context, id uuid.UUID) (*User, error) {
 	db.mu.RLock()
 	defer db.mu.RUnlock()
 
 	if user, ok := db.Users[id]; ok {
-		return &user, nil
+		return user, nil
 	}
 	return nil, ErrUserNotFound
 }
@@ -66,7 +64,7 @@ func (db *UserDB) GetUserByUsername(ctx context.Context, username string) (*User
 
 	for _, user := range db.Users {
 		if user.Username == username {
-			return &user, nil
+			return user, nil
 		}
 	}
 	return nil, ErrUserNotFound
@@ -80,12 +78,12 @@ func (db *UserDB) UpdateUser(ctx context.Context, user *User) error {
 		return ErrUserNotFound
 	}
 
-	db.Users[user.ID] = *user
+	db.Users[user.ID] = user
 
 	return nil
 }
 
-func (db *UserDB) DeleteUser(ctx context.Context, id int64) error {
+func (db *UserDB) DeleteUser(ctx context.Context, id uuid.UUID) error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 

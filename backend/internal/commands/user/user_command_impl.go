@@ -1,4 +1,4 @@
-package internalUserCommand
+package UserCommand
 
 import (
 	. "Groundwork/backend/internal/commands"
@@ -7,6 +7,8 @@ import (
 	"context"
 	"errors"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 // Error messages
@@ -51,7 +53,7 @@ func (u *userCommand) AddNewUser_command(ctx context.Context, user *User) Respon
 	}
 }
 
-func (u *userCommand) GetUserByID_command(ctx context.Context, id int64) Response {
+func (u *userCommand) GetUserByID_command(ctx context.Context, id uuid.UUID) Response {
 	user, err := u.userService.GetUserByID_service(ctx, id)
 	if err != nil {
 		return Response{
@@ -99,7 +101,7 @@ func (u *userCommand) UpdateUser_command(ctx context.Context, user *User) Respon
 	}
 }
 
-func (u *userCommand) DeleteUser_command(ctx context.Context, id int64) Response {
+func (u *userCommand) DeleteUser_command(ctx context.Context, id uuid.UUID) Response {
 	err := u.userService.DeleteUser_service(ctx, id)
 	if err != nil {
 		return Response{
