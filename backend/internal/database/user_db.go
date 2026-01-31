@@ -44,7 +44,9 @@ func (db *UserDB) AddNewUser(ctx context.Context, user *User) (*User, error) {
 		return nil, ErrUsernameExists
 	}
 
-	db.Users[uuid.New()] = user
+	id := uuid.New()
+	user.ID = id
+	db.Users[id] = user
 	return user, nil
 }
 
